@@ -269,3 +269,41 @@ test('resend Auth transport pins signup type and confirmation redirect without e
   assert.deepEqual(JSON.parse(call.options.body),{type:'signup',email:'synthetic@example.test'});
   assert.equal(call.options.redirect,'error'); assert.equal(call.options.headers.Authorization,undefined);
 });
+
+
+test('confirmed vendor with catalogue is provisioned before transient logout', async t => {
+  const f = await fixture(t,{role:'vendor'});
+  f.auth.verify = async () => ({
+    user: { id:'synthetic-vendor', email_confirmed_at:'2026-11-11T00:00:00Z',
+      user_metadata: { role:'vendor', name:'Ana',business_name:'Pães da Ana',
+        category:'Pães',onboarding_products:['Pão francês','Sonho'] } },
+    access_token:'SYNTHETIC_ACCESS_ONLY',expires_in:3600
+  });
+  f.auth.completeVendorOnboarding = async (token, params) => {
+    f.calls.push({operation:'catalogue',token,params});
+    return {profile:{vendor_id:'synthetic-vendor-id'},products:[{name:'Pão francês'},{name:'Sonho'}]};
+  };
+  const {csrf}=await f.begin();
+  assert.equal((await f.post('confirm',csrf)).response.status,303);
+  const page = await f.request('/auth/confirm');
+  assert.match(page.text,/negócio preparado/);
+  assert.deepEqual(f.calls.map(x=>x.operation),['catalogue','logout-local']);
+  assert.deepEqual(f.calls[0].params.p_product_names,['Pão francês','Sonho']);
+  assert(!page.text.includes('SYNTHETIC_ACCESS_ONLY'));
+});
+
+test('failed catalogue provisioning does not claim business readiness or skip logout', async t => {
+  const f = await fixture(t,{role:'vendor'});
+  f.auth.verify = async () => ({
+    user: { id:'synthetic-vendor',email_confirmed_at:'2026-11-11T00:00:00Z',
+      user_metadata:{role:'vendor',name:'Ana',business_name:'Pães da Ana',category:'Pães',onboarding_products:['Sonho']} },
+    access_token:'SYNTHETIC_ACCESS_ONLY',expires_in:3600
+  });
+  f.auth.completeVendorOnboarding = async () => { f.calls.push({operation:'catalogue'});throw new AuthFailure('temporary'); };
+  const {csrf}=await f.begin();
+  await f.post('confirm',csrf);
+  const page=await f.request('/auth/confirm');
+  assert.match(page.text,/cadastro profissional pendente/);
+  assert.deepEqual(f.calls.map(x=>x.operation),['catalogue','logout-local']);
+  assert(!page.text.includes('negócio preparado'));
+});
