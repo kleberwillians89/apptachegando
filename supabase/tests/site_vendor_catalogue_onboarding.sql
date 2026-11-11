@@ -29,7 +29,8 @@ grant execute on function pg_temp.assert_true(boolean,text),pg_temp.denied(text)
 insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data) values
  ('e0000000-0000-4000-8000-000000000001','catalog-vendor@example.test',now(),'{"role":"vendor","name":"Vendor Test"}'),
  ('e0000000-0000-4000-8000-000000000002','catalog-other@example.test',now(),'{"role":"vendor","name":"Other Vendor"}'),
- ('e0000000-0000-4000-8000-000000000003','catalog-unconfirmed@example.test',null,'{"role":"vendor","name":"Unconfirmed"}');
+ ('e0000000-0000-4000-8000-000000000003','catalog-unconfirmed@example.test',null,'{"role":"vendor","name":"Unconfirmed"}'),
+ ('e0000000-0000-4000-8000-000000000004','catalog-consumer@example.test',now(),'{"role":"consumer","name":"Consumer"}');
 insert into auth.sessions(id,user_id) select id,id from auth.users where id::text like 'e0000000-%';
 
 select pg_temp.assert_true(
@@ -56,6 +57,12 @@ select set_config('request.jwt.claims','{"session_id":"e0000000-0000-4000-8000-0
 select pg_temp.assert_true(pg_temp.denied(
   'select public.complete_vendor_onboarding(''A'',''B'',''Pães'',array[''Bread''])'
 ), 'unconfirmed account denied');
+
+select set_config('request.jwt.claim.sub','e0000000-0000-4000-8000-000000000004',true);
+select set_config('request.jwt.claims','{"session_id":"e0000000-0000-4000-8000-000000000004"}',true);
+select pg_temp.assert_true(pg_temp.denied(
+  'select public.complete_vendor_onboarding(''Consumer'',''Changed Role'',''Pães'',array[''Bread''])'
+), 'consumer cannot silently become vendor through catalogue onboarding');
 
 select set_config('request.jwt.claim.sub','e0000000-0000-4000-8000-000000000001',true);
 select set_config('request.jwt.claims','{"session_id":"e0000000-0000-4000-8000-000000000001"}',true);
