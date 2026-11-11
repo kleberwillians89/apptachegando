@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadConfig } from './config.mjs';
 import { SealedCookies, randomId, same } from './sealed-cookie.mjs';
 import { SupabaseAuth, AuthFailure } from './supabase.mjs';
+import { vendorOnboardingDraft } from './onboarding.mjs';
 import { render } from './render.mjs';
 
 const PUBLIC = fileURLToPath(new URL('../public/', import.meta.url));
@@ -115,8 +116,27 @@ export function createPortal(config, { auth = new SupabaseAuth(config), now = Da
             // Verification may create a transient server session. Revoke only that session,
             // then discard both tokens. Never import it into the browser's or Android's login.
             let state = 'confirmed';
+            const onboarding = vendorOnboardingDraft(result.user);
+            if (onboarding) {
+              if (onboarding.needsCompletion || !result.access_token) {
+                state = 'confirmed_onboarding_pending';
+              } else {
+                try {
+                  await auth.completeVendorOnboarding(result.access_token, onboarding.params);
+                  state = 'confirmed_onboarded';
+                } catch {
+                  // The email remains confirmed even when catalogue provisioning fails.
+                  // Never claim business readiness without a confirmed RPC response.
+                  state = 'confirmed_onboarding_pending';
+                }
+              }
+            }
             if (typeof result.access_token === 'string' && result.access_token) {
-              try { await auth.logoutTransient(result.access_token); } catch { state = 'confirmed_logout_pending'; }
+              try {
+                await auth.logoutTransient(result.access_token);
+              } catch {
+                if (state === 'confirmed' || state === 'confirmed_onboarded') state = 'confirmed_logout_pending';
+              }
             }
             remember(flow.id, state);
             return redirect(url.pathname, { id: flow.id, state, digest: flow.digest, csrf: randomId(), expiresAt: now() + TTL }, kind);
