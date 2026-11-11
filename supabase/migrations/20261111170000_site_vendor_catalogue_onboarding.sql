@@ -38,6 +38,17 @@ begin
   -- Serializes competing onboarding attempts for this authenticated identity.
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('profile:' || actor::text,0));
 
+  -- An existing consumer account cannot silently turn itself into a vendor.
+  -- Legacy professional accounts are accepted through their persisted vendor link.
+  if not exists (
+    select 1 from public.profiles p
+    where p.id=actor and p.signup_role='vendor'
+  ) and not exists (
+    select 1 from public.vendors v where v.user_id=actor
+  ) then
+    raise exception 'Vendor enrollment required' using errcode='42501';
+  end if;
+
   -- Reuses the existing confirmed-session, business-category and idempotency checks.
   profile_result := private.complete_my_profile('vendor',p_name,p_business_name,p_category,p_phone);
   vendor := (profile_result->>'vendor_id')::uuid;
