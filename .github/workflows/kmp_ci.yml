@@ -51,6 +51,15 @@ jobs:
             if docker exec "$TCH_CONTAINER" pg_isready -U postgres; then break; fi
             sleep 1
           done
+          # pg_isready may return before the PostGIS image has finished its init scripts.
+          # Wait for the default extension to finish initializing before relocating it.
+          installed=0
+          for attempt in {1..60}; do
+            installed=$(docker exec "$TCH_CONTAINER" psql -U postgres -Atqc "select count(*) from pg_extension where extname='postgis'" 2>/dev/null || echo 0)
+            if [ "$installed" = "1" ]; then break; fi
+            sleep 1
+          done
+          test "$installed" = "1"
           # The image preinstalls PostGIS in public; this scratch fixture starts clean.
           docker exec "$TCH_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 -c 'DROP EXTENSION IF EXISTS postgis_topology CASCADE; DROP EXTENSION IF EXISTS postgis CASCADE;'
           for sql in scripts/sql/bootstrap-postgres.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/*.sql; do
