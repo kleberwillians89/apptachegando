@@ -3,6 +3,7 @@ package org.example.project.core.ui.maps
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -103,7 +104,13 @@ actual fun NativeMap(
 
     LaunchedEffect(attempt, mapLoaded, online) {
         timedOut = false
-        if (!mapLoaded && online) { delay(20_000); timedOut = true }
+        if (!mapLoaded && online) {
+            delay(20_000)
+            if (!mapLoaded) {
+                timedOut = true
+                Log.w("TCMaps", "GoogleMap onMapLoaded was not received after 20s; inspect Maps SDK authentication and network logs")
+            }
+        }
     }
     val markerLocations = remember<List<Location>>(vendorMarkers, vendorLocations) {
         if (vendorMarkers.isEmpty()) vendorLocations else vendorMarkers.map { it.location }
@@ -124,7 +131,7 @@ actual fun NativeMap(
         cameraPositionState = cameraPositionState,
         properties = properties,
         uiSettings = settings,
-        onMapLoaded = { mapLoaded = true },
+        onMapLoaded = {\n            mapLoaded = true\n            Log.i("TCMaps", "GoogleMap onMapLoaded callback received")\n        },
         onMapClick = { latLng -> onMapClick(Location(latLng.latitude, latLng.longitude)) }
     ) {
         userLocation?.takeIf { it.isValidMapLocation() }?.let { location ->
