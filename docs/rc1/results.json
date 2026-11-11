@@ -1,0 +1,59 @@
+{
+  "status": "BLOQUEADO_POR_DEPENDENCIAS_EXTERNAS",
+  "artifactPromoted": false,
+  "apk": {
+    "path": "<PROJECT_ROOT>/KotlinProject/composeApp/build/outputs/apk/homologation/composeApp-homologation.apk",
+    "applicationId": "org.example.project.homologation",
+    "sha256": "ced5ec966c231283f51b378fb249858bef398b64b5e4dec4771e21edf1d9f5b7",
+    "purpose": "Build interno de validação; push desativado; não promovido a RC1 completo",
+    "certificateSha1": "4A:63:58:B2:F7:19:1E:9C:70:C7:0A:77:7D:20:DC:9D:D3:86:7D:58"
+  },
+  "migration": {
+    "path": "supabase/migrations/20261104210040_interest_push_rc1.sql",
+    "sha256": "3e671c354e003204aad526e44dba136e0bff15f970259331734be87a41fdba99",
+    "appliedRemotely": false
+  },
+  "tests": {
+    "Debug": {
+      "tests": 157,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "Homologation": {
+      "tests": 157,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "node": 28,
+    "portal": 26,
+    "postgresPushAssertions": 54,
+    "projectionParity": 7,
+    "postgresTransportIntegrationScenarios": 6,
+    "lint": {
+      "Warning": 64,
+      "Hint": 1
+    }
+  },
+  "previousApks": {
+    "count": 18,
+    "allUnchanged": true
+  },
+  "remoteWrites": false,
+  "devicesUsed": false,
+  "realFcmDeliveryValidated": false,
+  "changedSinceTaskBaseline": [
+    "KotlinProject/composeApp/src/androidMain/kotlin/org/example/project/core/utils/InterestFirebasePush.kt",
+    "KotlinProject/composeApp/src/androidMain/kotlin/org/example/project/core/utils/InterestNotifier.android.kt",
+    "KotlinProject/composeApp/src/commonTest/kotlin/org/example/project/core/performance/LocationPublisherTest.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/features/consumer/VendorProfileScreen.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/features/vendor/err/ActiveRouteScreen.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/core/utils/LocationPublisher.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/core/data/VendorRepository.kt",
+    "scripts/push/interest-dispatcher.test.mjs",
+    "scripts/push/interest-dispatcher.mjs",
+    "supabase/migrations/20261104210040_interest_push_rc1.sql",
+    "KotlinProject/composeApp/build.gradle.kts"
+  ]
+}

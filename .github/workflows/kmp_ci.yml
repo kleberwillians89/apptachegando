@@ -1,0 +1,72 @@
+name: Kotlin Multiplatform
+on:
+  pull_request:
+    paths: ['KotlinProject/**', 'supabase/**', 'scripts/**', 'auth-portal/**', '.github/workflows/kmp_ci.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: KotlinProject
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+      - run: ./gradlew :composeApp:compileDebugKotlinAndroid :composeApp:testDebugUnitTest :composeApp:lintDebug --no-daemon
+  ios:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: KotlinProject
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :composeApp:compileKotlinIosArm64 :composeApp:iosSimulatorArm64Test --no-daemon
+  database:
+    runs-on: ubuntu-latest
+    services:
+      postgis:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+    steps:
+      - uses: actions/checkout@v4
+      - name: Canonical migrations and security tests in disposable CI container
+        env:
+          TCH_CONTAINER: ${{ job.services.postgis.id }}
+        run: |
+          for attempt in {1..30}; do
+            if docker exec "$TCH_CONTAINER" pg_isready -U postgres; then break; fi
+            sleep 1
+          done
+          # The image preinstalls PostGIS in public; this scratch fixture starts clean.
+          docker exec "$TCH_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 -c 'DROP EXTENSION IF EXISTS postgis_topology CASCADE; DROP EXTENSION IF EXISTS postgis CASCADE;'
+          for sql in scripts/sql/bootstrap-postgres.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/*.sql; do
+            docker exec -i "$TCH_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 < "$sql"
+          done
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: auth-portal/package-lock.json
+      - run: npm ci --prefix auth-portal
+      - run: npm test --prefix auth-portal
+      - run: npm run check --prefix auth-portal
+      - run: node --test scripts/integration/guards.test.mjs scripts/integration/resume.test.mjs scripts/push/interest-dispatcher.test.mjs scripts/push/adapters.test.mjs
+      - run: python3 scripts/push/generate-projection-tests.py --check

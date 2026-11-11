@@ -1,0 +1,135 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history/
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Secrets & signing
+.env
+*.jks
+*.keystore
+
+# Build outputs
+*.apk
+*.aab
+
+# Agent/IDE config
+.codex/
+.vscode/
+
+# Kotlin Multiplatform
+.kotlin/
+.gradle/
+local.properties
+**/build/
+
+# Local JDK
+jdk-*/
+*.tar.gz
+
+# Sprint 1: local infrastructure and environment values
+KotlinProject/config/*.properties
+!KotlinProject/config/*.properties.example
+supabase/.temp/
+supabase/.branches/
+.local/
+
+# Private signing material and local environment variants
+*.p8
+*.p12
+*.mobileprovision
+*.pem
+.env.*
+!.env.example
+
+# Local-only evidence, publication checkout and tools
+/output/
+/tmp/
+.local/
+.playwright-cli/
+**/.playwright-cli/
+.superpowers/
+__pycache__/
+*.pyo
+*.hprof
+*.heapdump
+*.dmp
+*.dump
+*.bak
+*.sqlite
+*.sqlite3
+*.db
+*.pfx
+*.der
+*.key
+*.crt
+*.cer
+credentials*.json
+*service-account*.json
+*service_account*.json
+firebase-adminsdk*.json
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Node, Apple and editor generated files
+**/node_modules/
+**/dist/
+**/coverage/
+**/.vite/
+**/.cache/
+**/.next/
+**/Pods/
+**/DerivedData/
+**/xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xcuserdatad
+
+# Machine-local graph cache (keep graph.json/report/html when intentionally published)
+**/graphify-out/.graphify_*
+**/graphify-out/.ast_cache/
+**/graphify-out/.needs_update
+**/graphify-out/cost.json
+
+# Derived local knowledge-graph output is not required to build the app.
+**/graphify-out/

@@ -1,0 +1,11 @@
+-- Generated from scripts/push/contract-fixtures.json; same vectors tested by Kotlin.
+begin;
+create function pg_temp.parity_assert(ok boolean,label text) returns void language plpgsql as $$begin if ok is distinct from true then raise exception 'Projection parity: %',label;end if;raise notice 'RC1 PARITY PASS: %',label;end$$;
+select pg_temp.parity_assert((select ambiguous=false and abs(along_m-555.975)<0.001 and abs(cross_m-0)<0.001 from private.push_projection('[{"latitude":0,"longitude":0,"orderIndex":0},{"latitude":0,"longitude":0.01,"orderIndex":1}]',0,0.005)), 'straight');
+select pg_temp.parity_assert((select ambiguous=false and abs(along_m-0)<0.001 and abs(cross_m-111.195)<0.001 from private.push_projection('[{"latitude":0,"longitude":0,"orderIndex":0},{"latitude":0,"longitude":0.01,"orderIndex":1}]',0,-0.001)), 'clamped behind');
+select pg_temp.parity_assert((select ambiguous=false and abs(along_m-555.975)<0.001 and abs(cross_m-222.39)<0.001 from private.push_projection('[{"latitude":0,"longitude":0,"orderIndex":0},{"latitude":0,"longitude":0.01,"orderIndex":1}]',0.002,0.005)), 'outside corridor');
+select pg_temp.parity_assert((select ambiguous=true from private.push_projection('[{"latitude":0,"longitude":0,"orderIndex":0},{"latitude":0,"longitude":0.01,"orderIndex":1},{"latitude":0,"longitude":0,"orderIndex":2}]',0,0.005)), 'overlap return');
+select pg_temp.parity_assert((select ambiguous=true from private.push_projection('[{"latitude":0,"longitude":0,"orderIndex":0},{"latitude":0,"longitude":0.01,"orderIndex":1},{"latitude":0.01,"longitude":0.01,"orderIndex":2},{"latitude":0.01,"longitude":0,"orderIndex":3},{"latitude":0,"longitude":0,"orderIndex":4}]',0,0)), 'closed loop origin');
+select pg_temp.parity_assert((select ambiguous=true from private.push_projection('[{"latitude":-0.005,"longitude":-0.005,"orderIndex":0},{"latitude":0.005,"longitude":0.005,"orderIndex":1},{"latitude":-0.005,"longitude":0.005,"orderIndex":2},{"latitude":0.005,"longitude":-0.005,"orderIndex":3}]',0,0)), 'crossing');
+select pg_temp.parity_assert((select ambiguous=false and abs(along_m-555.975)<0.001 and abs(cross_m-0)<0.001 from private.push_projection('[{"latitude":0,"longitude":0,"orderIndex":0},{"latitude":0,"longitude":0,"orderIndex":1},{"latitude":0,"longitude":0.01,"orderIndex":2}]',0,0.005)), 'duplicate vertex');
+rollback;

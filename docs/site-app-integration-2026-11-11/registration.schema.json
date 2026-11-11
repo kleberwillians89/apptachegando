@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TáChegando registration form v1 (not an authorization claim)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "email", "password", "role"],
+  "properties": {
+    "name": {"type": "string", "minLength": 1, "maxLength": 160, "pattern": "\\S"},
+    "email": {"type": "string", "format": "email", "maxLength": 254},
+    "password": {"type": "string", "minLength": 8, "maxLength": 128},
+    "role": {"enum": ["consumer", "vendor"]},
+    "business_name": {"type": "string", "minLength": 1, "maxLength": 160, "pattern": "\\S"},
+    "category": {"enum": ["Pães", "Frutas", "Salgados", "Doces de padaria", "Lanches naturais", "Sorvetes", "Temperos", "Produtos de limpeza prontos"]}
+  },
+  "allOf": [{"if": {"properties": {"role": {"const": "vendor"}}}, "then": {"required": ["business_name", "category"]}}]
+}

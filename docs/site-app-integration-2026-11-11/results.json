@@ -1,0 +1,93 @@
+{
+  "date": "2026-11-11",
+  "status": "IMPLEMENTADO_E_VALIDADO_LOCALMENTE_NAO_INSTALADO_REMOTAMENTE",
+  "migration": {
+    "file": "supabase/migrations/20261111135508_web_app_identity_and_discovery.sql",
+    "sha256": "c37c3646aff8f8f4e5882d1c94484e7f2af1ff816fe051afdc0ce2ce0676e4e9",
+    "remoteApplied": false
+  },
+  "tests": {
+    "Debug": {
+      "tests": 174,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "Homologation": {
+      "tests": 174,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "webSqlAssertions": 46,
+    "rc1SqlAssertions": 54,
+    "projectionParityCases": 7,
+    "postgresHttpIntegrationScenarios": 6,
+    "concurrentProfileCompletionPassed": true,
+    "concurrentInterestPassed": true,
+    "node": {
+      "tests": 28,
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    "portal": {
+      "tests": 29,
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "Warning": 60,
+      "Hint": 1
+    },
+    "compileHomologation": "PASS_NO_APK",
+    "syntaxPortal": "PASS",
+    "diffWhitespace": "PASS"
+  },
+  "remoteWrites": false,
+  "realEmailSent": false,
+  "realAuthUsersCreated": false,
+  "realFcmDeliveryValidated": false,
+  "apkGenerated": false,
+  "emulatorStarted": false,
+  "changedFiles": [
+    "supabase/migrations/20261111135508_web_app_identity_and_discovery.sql",
+    "supabase/tests/web_identity_discovery.sql",
+    "supabase/seed.sql",
+    "scripts/sql/bootstrap-postgres.sql",
+    "scripts/test-local-database.py",
+    "scripts/push/postgres-integration.mjs",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/core/data/AccountProfileRepository.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/core/data/ConfirmationResender.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/core/data/AuthRepository.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/core/data/AuthValidation.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/core/data/VendorRepository.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/core/data/PurchaseIntentRepository.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/core/data/ConsumerExperience.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/features/auth/LoginScreen.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/features/auth/ConsumerRegisterScreen.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/features/auth/VendorRegisterScreen.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/features/consumer/ConsumerHomeScreen.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/features/consumer/VendorListScreen.kt",
+    "KotlinProject/composeApp/src/commonMain/kotlin/org/example/project/features/consumer/VendorProfileScreen.kt",
+    "KotlinProject/composeApp/src/commonTest/kotlin/org/example/project/core/auth/WebAccountIntegrationTest.kt",
+    "KotlinProject/composeApp/src/commonTest/kotlin/org/example/project/core/auth/ConfirmationResenderTest.kt",
+    "KotlinProject/composeApp/src/commonTest/kotlin/org/example/project/core/auth/AuthValidationTest.kt",
+    "KotlinProject/composeApp/src/commonTest/kotlin/org/example/project/core/data/InterestConditionTest.kt",
+    "auth-portal/src/server.mjs",
+    "auth-portal/src/supabase.mjs",
+    "auth-portal/src/render.mjs",
+    "auth-portal/test/portal.test.mjs"
+  ],
+  "evidenceLimits": [
+    "PostgreSQL real with synthetic Auth shim, not real Supabase Auth",
+    "Android controlled Auth/profile callbacks, not remote SDK login/refresh",
+    "Portal and FCM use controlled transports",
+    "No Android journey or SMTP delivery tested"
+  ],
+  "oldDistributedApks": {
+    "count": 18,
+    "unchanged": true
+  }
+}

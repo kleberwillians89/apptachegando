@@ -1,0 +1,9 @@
+[
+ {"name":"straight","points":[[0,0],[0,0.01]],"point":[0,0.005],"along":555.975,"cross":0,"ambiguous":false},
+ {"name":"clamped behind","points":[[0,0],[0,0.01]],"point":[0,-0.001],"along":0,"cross":111.195,"ambiguous":false},
+ {"name":"outside corridor","points":[[0,0],[0,0.01]],"point":[0.002,0.005],"along":555.975,"cross":222.39,"ambiguous":false},
+ {"name":"overlap return","points":[[0,0],[0,0.01],[0,0]],"point":[0,0.005],"ambiguous":true},
+ {"name":"closed loop origin","points":[[0,0],[0,0.01],[0.01,0.01],[0.01,0],[0,0]],"point":[0,0],"ambiguous":true},
+ {"name":"crossing","points":[[-0.005,-0.005],[0.005,0.005],[-0.005,0.005],[0.005,-0.005]],"point":[0,0],"ambiguous":true},
+ {"name":"duplicate vertex","points":[[0,0],[0,0],[0,0.01]],"point":[0,0.005],"along":555.975,"cross":0,"ambiguous":false}
+]
