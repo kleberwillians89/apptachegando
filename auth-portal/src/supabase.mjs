@@ -40,6 +40,30 @@ export class SupabaseAuth {
     const user = await this.request('user', { password }, token, 'PUT');
     if (!user?.id || user.id !== userId) throw new AuthFailure('temporary');
   }
+  async completeVendorOnboarding(token, params) {
+    // The verified session token is short-lived and never leaves this server.
+    // No service-role credential. PostgREST invokes the strictly authenticated RPC.
+    let response;
+    try {
+      response = await this.fetcher(this.config.supabaseUrl + '/rest/v1/rpc/complete_vendor_onboarding', {
+        method: 'POST',
+        headers: {
+          apikey: this.config.publishableKey,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify(params),
+        redirect: 'error',
+        signal: AbortSignal.timeout(12000)
+      });
+    } catch { throw new AuthFailure('temporary'); }
+    if (!response.ok) throw new AuthFailure('temporary');
+    let data;
+    try { data = await response.json(); } catch { throw new AuthFailure('temporary'); }
+    if (!data?.profile?.vendor_id || !Array.isArray(data.products)) throw new AuthFailure('temporary');
+    return data;
+  }
   async logoutTransient(token) {
     // Scope local: never revoke unrelated browser or Android sessions through a global logout.
     await this.request('logout?scope=local', undefined, token);
