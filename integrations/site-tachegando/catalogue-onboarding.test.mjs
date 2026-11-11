@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { validateVendorCatalogue, completeVendorCatalogue } from './catalogue-onboarding.mjs';
+const form={name:'  Ana  ',businessName:'  Pães da Ana ',category:'Pães',products:[' Croissant ','Sonho'],phone:''};
+const response={profile:{vendor_id:'test-vendor'},products:[{name:'Croissant'},{name:'Sonho'}]};
+test('normalizes input without prices',()=>assert.deepEqual(validateVendorCatalogue(form),{p_name:'Ana',p_business_name:'Pães da Ana',p_category:'Pães',p_product_names:['Croissant','Sonho'],p_phone:null}));
+test('rejects duplicate product names',()=>assert.throws(()=>validateVendorCatalogue({...form,products:['Pão',' pão ']})));
+test('rejects invalid category',()=>assert.throws(()=>validateVendorCatalogue({...form,category:'Outros'})));
+test('rejects empty or excessive catalogues',()=>{assert.throws(()=>validateVendorCatalogue({...form,products:[]}));assert.throws(()=>validateVendorCatalogue({...form,products:Array(31).fill('Pão')}));});
+test('rejects unconfirmed account without calling rpc',async()=>{let calls=0;const supabase={auth:{getUser:async()=>({data:{user:{id:'id',email_confirmed_at:null}}})},rpc:async()=>{calls++}};await assert.rejects(completeVendorCatalogue(supabase,form),/Confirme/);assert.equal(calls,0)});
+test('calls RPC only for confirmed user and validates response',async()=>{let called;const supabase={auth:{getUser:async()=>({data:{user:{id:'id',email_confirmed_at:'2026-11-11'}}})},rpc:async(name,p)=>{called={name,p};return {data:response}}};assert.equal(await completeVendorCatalogue(supabase,form),response);assert.equal(called.name,'complete_vendor_onboarding');assert.deepEqual(called.p.p_product_names,['Croissant','Sonho']);});
+test('does not claim success on RPC error',async()=>{const supabase={auth:{getUser:async()=>({data:{user:{id:'id',email_confirmed_at:'2026-11-11'}}})},rpc:async()=>({error:{message:'secret backend error'}})};await assert.rejects(completeVendorCatalogue(supabase,form),/Não foi possível/)});
