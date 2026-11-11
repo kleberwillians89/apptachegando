@@ -7,8 +7,8 @@
 1. Site coleta nome, e-mail, senha, nome comercial, categoria e uma lista de 1–30 produtos prontos (1–160 caracteres cada). **Nunca enviar senha por e-mail**.
 2. `supabase.auth.signUp()` cria a identidade e dispara o fluxo de confirmação. Não usar `user_metadata` para autorização.
 3. Portal confirma o e-mail por token hash e POST. O usuário autentica no site.
-4. O site obtém a sessão atual via `auth.getUser()` e chama a RPC abaixo **uma vez com a lista completa**; pode repetir após falha de rede sem duplicar o catálogo.
-5. Após resposta positiva, orienta entrar no Android com as mesmas credenciais.
+4. **Fluxo preferencial sem segundo login:** o portal Node, após verificar o e-mail via token hash e POST, usa apenas o access token transitório da sessão confirmada para chamar `complete_vendor_onboarding` com o rascunho de produtos presente em `user_metadata`. O portal descarta a sessão após a RPC, com logout local. O navegador **não** recebe esse token. Caso essa etapa falhe, o e-mail permanece confirmado, a tela informa a pendência e o login web pode concluir o cadastro por meio da mesma RPC idempotente.
+5. Após resposta positiva, orienta entrar no Android com as mesmas credenciais; não é necessário fazer login no site outra vez.
 6. Android resolve `vendors.user_id` pela identidade e carrega `public.products` pelo `vendor_id`. Rota/GPS são configurados e ativados no Android, nunca inventados no site.
 
 ## Nova RPC de onboarding
@@ -36,7 +36,7 @@ if (error) throw error;
 - A função utiliza trava transacional por usuário, invoca `complete_my_profile` e cria o catálogo inicial **somente quando o vendedor não possui produtos**. Repetições não sobrescrevem produtos, rotas ou dados já existentes.
 - Os produtos têm `price=0` porque essa coluna é legada e obrigatória. **Nunca apresentar preço, checkout ou venda no produto.**
 - Retorna somente ID, nome e disponibilidade dos produtos próprios, sem dados de outros usuários.
-- **Não** mandar lista de produtos para `localStorage`, query string, metadata Auth ou logs. Preserve apenas em estado de formulário enquanto o usuário está cadastrando. Se a confirmação exigir nova sessão, use um rascunho temporário seguro e de prazo curto, sem senha, ou solicite a lista novamente; não finja que itens foram gravados antes da confirmação.
+- O formulário em `/cadastro` transmite a lista de produtos em `user_metadata.onboarding_products` **somente como rascunho não autoritativo** (sem senha, preço ou segredos), para permitir conclusão mesmo em outro navegador. O portal valida e a RPC verifica sessão confirmada, intenção `signup_role` e propriedade do registro. A metadata é editável e nunca autoriza operações. Não gravar senhas ou tokens em `localStorage`, query string ou logs.
 - O site atualmente validado pelo Claude em clone ainda não foi encontrado publicado com `novo/js/config.js` e `novo/js/conta.js`; integrar neste código validado, não no protótipo `localStorage` antigo.
 - Não ativar produção sem: migration aplicada e validada, portal HTTPS, SMTP confirmado, site em Preview com publishable key e teste real.
 
