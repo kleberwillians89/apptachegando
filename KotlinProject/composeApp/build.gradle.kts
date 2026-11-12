@@ -57,6 +57,15 @@ if (appEnvironment != "development") {
         "Configure HTTPS SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY for this environment."
     }
 }
+// Fail closed: a QA build must never silently use local or production infrastructure.
+if (appEnvironment == "homologation") {
+    require(configuredSupabaseUrl == "https://vhnkezwjknwpddqhlnfk.supabase.co") {
+        "Homologation requires the authorized QA Supabase project vhnkezwjknwpddqhlnfk."
+    }
+    require(configuredSupabaseKey.startsWith("sb_publishable_") && configuredSupabaseKey.length > 20) {
+        "Homologation requires an authorized Supabase publishable key (never a server key)."
+    }
+}
 // Homologation can validate the backend before Maps is provisioned. The map's existing
 // unavailable state remains visible; production still requires a real Maps configuration.
 if (appEnvironment == "production") {
