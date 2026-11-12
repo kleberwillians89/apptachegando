@@ -70,7 +70,7 @@ fun VendorDashboardScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    if (isOnline) "Você aparece no mapa" else "Você não aparece no mapa",
+                    if (isOnline) "Disponível para iniciar rota" else "Indisponível para atendimento",
                     style = MaterialTheme.typography.titleLarge,
                     color = if (isOnline) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
@@ -92,7 +92,7 @@ fun VendorDashboardScreen(
             }
 
             Text(
-                "A disponibilidade permite entrar no catálogo. Para aparecer no mapa, publique uma localização durante uma rota ativa; posições antigas expiram.",
+                "Estar disponível não coloca você no mapa automaticamente. Para que consumidores encontrem você, inicie uma rota e permita o envio da localização atualizada. Ao encerrar a rota, você deixa de aparecer.",
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 16.dp)
             )

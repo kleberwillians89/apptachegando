@@ -21,25 +21,56 @@ internal fun productDisplayPrice(value: String): String = runCatching {
 }.getOrDefault("Preço indisponível")
 
 @Serializable
-internal data class ProductRecord(val id: String, val name: String, val price: JsonPrimitive) {
+internal data class ProductRecord(
+    val id: String,
+    val name: String,
+    val price: JsonPrimitive,
+    @SerialName("is_active") val isActive: Boolean = true
+) {
     fun toDomain() = Product(id, name, canonicalPrice(price.content))
+    fun toOwned() = OwnCatalogProduct(id, name, canonicalPrice(price.content), isActive)
 }
+
+/** Includes visibility: hidden products remain editable by their owner. */
+data class OwnCatalogProduct(
+    val id: String,
+    val name: String,
+    val price: String,
+    val isActive: Boolean
+)
 
 object ProductRepository {
     @Serializable private data class ProductWrite(
         @SerialName("vendor_id") val vendorId: String, val name: String, val price: String
     )
-    private suspend fun currentVendorId(): String = VendorRepository.resolveRouteVendorId(
-        AuthRepository.currentUser()?.id ?: error("Entre na sua conta.")
-    )
-    suspend fun listOwn(page: Int = 0): List<Product> {
+    private suspend fun currentVendorId(): String {
+        val userId = AuthRepository.currentUser()?.id ?: error("Entre na sua conta.")
+        val vendorId = AccountProfileRepository().vendorIdFor(userId)
+        check(AuthRepository.currentUser()?.id == userId) { "Sessão alterada. Entre novamente." }
+        return vendorId
+    }
+    suspend fun listOwn(page: Int = 0): List<Product> =
+        listOwnEntries(page).map { Product(it.id, it.name, it.price) }
+
+    suspend fun listOwnEntries(page: Int = 0): List<OwnCatalogProduct> {
         val bounds = pageBounds(page, VendorRepository.PAGE_SIZE)
         val vendorId = currentVendorId()
-        return supabase.postgrest["products"].select(columns = Columns.list("id", "name", "price")) {
+        return supabase.postgrest["products"].select(columns = Columns.list("id", "name", "price", "is_active")) {
             filter { eq("vendor_id", vendorId) }
             order("id", Order.ASCENDING)
             range(bounds.first, bounds.last)
-        }.decodeList<ProductRecord>().map { it.toDomain() }
+        }.decodeList<ProductRecord>().map { it.toOwned() }
+    }
+
+    suspend fun setActive(id: String, active: Boolean): OwnCatalogProduct {
+        require(id.isNotBlank())
+        val vendorId = currentVendorId()
+        val rows = supabase.postgrest["products"].update({ set("is_active", active) }) {
+            filter { eq("id", id); eq("vendor_id", vendorId) }
+            select()
+        }.decodeList<ProductRecord>()
+        check(rows.size == 1) { "Não foi possível atualizar a visibilidade deste produto." }
+        return rows.single().toOwned()
     }
 
     suspend fun addCategory(name: String): Product {
@@ -63,9 +94,18 @@ object ProductRepository {
             select()
         }.decodeSingle<ProductRecord>().toDomain()
     }
-    suspend fun update(product: Product): Product = supabase.postgrest["products"].update({
-        set("name", product.name.trim()); set("price", canonicalPrice(product.price))
-    }) { filter { eq("id", product.id) }; select() }.decodeSingle<ProductRecord>().toDomain()
+    suspend fun update(product: Product): Product {
+        require(product.name.trim().length in 1..160)
+        val vendorId = currentVendorId()
+        val rows = supabase.postgrest["products"].update({
+            set("name", product.name.trim()); set("price", canonicalPrice(product.price))
+        }) {
+            filter { eq("id", product.id); eq("vendor_id", vendorId) }
+            select()
+        }.decodeList<ProductRecord>()
+        check(rows.size == 1) { "Não foi possível atualizar o produto." }
+        return rows.single().toDomain()
+    }
 
     suspend fun delete(id: String) {
         val vendorId = currentVendorId()
