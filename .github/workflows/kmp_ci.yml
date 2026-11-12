@@ -5,6 +5,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: kmp-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   android:
     runs-on: ubuntu-latest
@@ -18,6 +21,9 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: android-actions/setup-android@v3
+        with:
+          # v3 defaults to obsolete "tools platform-tools"; no Google service/account is needed.
+          packages: platform-tools
       - uses: gradle/actions/setup-gradle@v4
       - run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - run: ./gradlew :composeApp:compileDebugKotlinAndroid :composeApp:testDebugUnitTest :composeApp:lintDebug --no-daemon
@@ -41,6 +47,11 @@ jobs:
         image: postgis/postgis:17-3.5
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd "pg_isready -U postgres -h 127.0.0.1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
     steps:
       - uses: actions/checkout@v4
       - name: Canonical migrations and security tests in disposable CI container
@@ -48,13 +59,14 @@ jobs:
           TCH_CONTAINER: ${{ job.services.postgis.id }}
         run: |
           for attempt in {1..30}; do
-            if docker exec "$TCH_CONTAINER" pg_isready -U postgres; then break; fi
+            if docker exec "$TCH_CONTAINER" pg_isready -h 127.0.0.1 -U postgres; then break; fi
             sleep 1
           done
-          # The image preinstalls PostGIS in public; this scratch fixture starts clean.
-          docker exec "$TCH_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 -c 'DROP EXTENSION IF EXISTS postgis_topology CASCADE; DROP EXTENSION IF EXISTS postgis CASCADE;'
+          # TCP healthcheck waits for initdb to finish (the temporary server is Unix-socket only).
+          # A fresh template0 database avoids mutating the image's initialized PostGIS database.
+          docker exec "$TCH_CONTAINER" createdb -U postgres -T template0 tch_ci
           for sql in scripts/sql/bootstrap-postgres.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/*.sql; do
-            docker exec -i "$TCH_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 < "$sql"
+            docker exec -i "$TCH_CONTAINER" psql -U postgres -d tch_ci -v ON_ERROR_STOP=1 < "$sql"
           done
   node:
     runs-on: ubuntu-latest

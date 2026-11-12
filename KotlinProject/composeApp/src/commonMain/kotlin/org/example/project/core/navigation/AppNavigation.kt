@@ -194,14 +194,14 @@ fun AppNavigation(authEntryRequest: Int = 0, interestNotice: org.example.project
                     }
                 })
             }
-            if (GeneratedAppConfiguration.environment == "homologation") {
+            if (org.example.project.features.demo.demonstrationAvailable(GeneratedAppConfiguration.environment)) {
                 composable("demonstration") { DemonstrationScreen(onExit = { navController.popBackStack() }) }
             }
             composable(NavDestination.Onboarding.route) {
                 OnboardingScreen(
                     onLoginClick = { navController.navigate(NavDestination.Login.route) },
                     onRegisterClick = { navController.navigate(NavDestination.RegisterType.route) },
-                    onDemoClick = if (GeneratedAppConfiguration.environment == "homologation") {
+                    onDemoClick = if (org.example.project.features.demo.demonstrationAvailable(GeneratedAppConfiguration.environment)) {
                         { navController.navigate("demonstration") }
                     } else null
                 )

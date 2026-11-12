@@ -131,7 +131,10 @@ actual fun NativeMap(
         cameraPositionState = cameraPositionState,
         properties = properties,
         uiSettings = settings,
-        onMapLoaded = {\n            mapLoaded = true\n            Log.i("TCMaps", "GoogleMap onMapLoaded callback received")\n        },
+        onMapLoaded = {
+            mapLoaded = true
+            Log.i("TCMaps", "GoogleMap onMapLoaded callback received")
+        },
         onMapClick = { latLng -> onMapClick(Location(latLng.latitude, latLng.longitude)) }
     ) {
         userLocation?.takeIf { it.isValidMapLocation() }?.let { location ->

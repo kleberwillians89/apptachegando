@@ -1,5 +1,5 @@
 # Public client settings. Copy to homologation.properties (ignored).
-SUPABASE_URL=
+SUPABASE_URL=https://vhnkezwjknwpddqhlnfk.supabase.co
 SUPABASE_PUBLISHABLE_KEY=
 GOOGLE_MAPS_API_KEY=
 INTEREST_PUSH_CONTRACTS_INSTALLED=false
