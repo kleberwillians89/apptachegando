@@ -1,0 +1,333 @@
+{
+  "checkedAt": "2026-11-12",
+  "projectRef": "vhnkezwjknwpddqhlnfk",
+  "mode": "metadata_readonly",
+  "remoteWrites": false,
+  "businessRpcsExecuted": false,
+  "migrationRegistry": [
+    {
+      "version": "20261029235025",
+      "name": "canonical_schema"
+    },
+    {
+      "version": "20261029235026",
+      "name": "canonical_security_and_rpc"
+    },
+    {
+      "version": "20261111233854",
+      "name": "site_vendor_catalogue_onboarding"
+    },
+    {
+      "version": "20261111234837",
+      "name": "vendor_catalogue_append_batches"
+    }
+  ],
+  "functions": [
+    {
+      "name": "cancel_purchase_intent",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "uuid",
+      "arguments": "p_intent_id uuid",
+      "source_md5": "487034a7c4a8cb21697e3872d43e2e8d",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "complete_my_profile",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "jsonb",
+      "arguments": "p_kind text, p_name text, p_business_name text, p_category text, p_phone text",
+      "source_md5": "f74fe4b7368718b3c64287545cd2a7ce",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "complete_vendor_onboarding",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "jsonb",
+      "arguments": "p_name text, p_business_name text, p_category text, p_product_names text[], p_phone text",
+      "source_md5": "93a1d9050ecc4897c84b096cb52d3657",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "create_purchase_intent",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "uuid",
+      "arguments": "p_vendor_id uuid, p_latitude double precision, p_longitude double precision",
+      "source_md5": "6d8b139497b41c1dd678ca3991bf5ff5",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "discover_vendors",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "TABLE(id uuid, name text, description text, category text, is_online boolean, distance text, rating text, review_count integer, latitude double precision, longitude double precision, products jsonb)",
+      "arguments": "p_latitude double precision, p_longitude double precision, p_query text, p_category text, p_offset integer, p_limit integer, p_radius_m integer",
+      "source_md5": "018e6756084786620d075e7031943f14",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "get_my_account_profile",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "jsonb",
+      "arguments": "",
+      "source_md5": "11451c989337ca770b50cf6292175905",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "get_my_interest_state",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "jsonb",
+      "arguments": "p_intent_id uuid",
+      "source_md5": "a1bd301136ce4ba777a0073652569cc5",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "get_route_attendance",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "jsonb",
+      "arguments": "p_route_id uuid",
+      "source_md5": "d03bd5769efd5737e9d071bc2ef1ec03",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "publish_route_location",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "uuid",
+      "arguments": "p_route_id uuid, p_latitude double precision, p_longitude double precision, p_accuracy_m double precision, p_recorded_at timestamp with time zone",
+      "source_md5": "098636baf91e21fb91c6e347b4e0f6e5",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "register_interest_push_device",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "uuid",
+      "arguments": "p_installation_id uuid, p_token text, p_binding_version uuid",
+      "source_md5": "6a55709e4bf2839cc82147889f350dbd",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "request_account_deletion",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "jsonb",
+      "arguments": "",
+      "source_md5": "094d5fec296cdb1eb215a9dfc865784d",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "revoke_interest_push_device",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "uuid",
+      "arguments": "p_installation_id uuid, p_binding_version uuid",
+      "source_md5": "99b49a7676fac8f6aed6323855429967",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "set_route_availability",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "uuid",
+      "arguments": "p_route_id uuid, p_online boolean, p_end boolean",
+      "source_md5": "091ac3d1d0e8abd12ef8cbba620e8ff0",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "name": "verify_interest_push",
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "boolean",
+      "arguments": "p_route_id uuid, p_intent_id uuid, p_installation_id uuid, p_binding_version uuid",
+      "source_md5": "51edd236ce05e302757922a480499d1b",
+      "anon_execute": false,
+      "security_definer": false,
+      "authenticated_execute": true
+    }
+  ],
+  "tables": [
+    {
+      "rls": true,
+      "name": "purchase_intents",
+      "schema": "public",
+      "anon_select": false,
+      "authenticated_select": true
+    },
+    {
+      "rls": true,
+      "name": "profiles",
+      "schema": "public",
+      "anon_select": false,
+      "authenticated_select": true
+    },
+    {
+      "rls": true,
+      "name": "vendors",
+      "schema": "public",
+      "anon_select": false,
+      "authenticated_select": true
+    },
+    {
+      "rls": true,
+      "name": "products",
+      "schema": "public",
+      "anon_select": false,
+      "authenticated_select": true
+    },
+    {
+      "rls": true,
+      "name": "vendor_locations",
+      "schema": "public",
+      "anon_select": false,
+      "authenticated_select": true
+    },
+    {
+      "rls": true,
+      "name": "vendor_routes",
+      "schema": "public",
+      "anon_select": false,
+      "authenticated_select": true
+    },
+    {
+      "rls": true,
+      "name": "interest_push_devices",
+      "schema": "private",
+      "anon_select": false,
+      "authenticated_select": false
+    },
+    {
+      "rls": true,
+      "name": "account_deletion_requests",
+      "schema": "private",
+      "anon_select": false,
+      "authenticated_select": false
+    },
+    {
+      "rls": true,
+      "name": "interest_push_outbox",
+      "schema": "private",
+      "anon_select": false,
+      "authenticated_select": false
+    }
+  ],
+  "triggers": [
+    {
+      "name": "on_auth_user_created",
+      "table": "users",
+      "schema": "auth",
+      "enabled": "O",
+      "function": "handle_new_user",
+      "function_schema": "private"
+    },
+    {
+      "name": "enqueue_interest_push",
+      "table": "purchase_intents",
+      "schema": "public",
+      "enabled": "O",
+      "function": "push_enqueue",
+      "function_schema": "private"
+    },
+    {
+      "name": "compute_route",
+      "table": "vendor_routes",
+      "schema": "public",
+      "enabled": "O",
+      "function": "route_geometry",
+      "function_schema": "private"
+    }
+  ],
+  "realtime": [
+    "vendors",
+    "products",
+    "vendor_locations",
+    "vendor_routes",
+    "purchase_intents"
+  ],
+  "requiredColumns": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "table": "sessions",
+      "schema": "auth"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "table": "sessions",
+      "schema": "auth"
+    },
+    {
+      "name": "not_after",
+      "type": "timestamp with time zone",
+      "table": "sessions",
+      "schema": "auth"
+    },
+    {
+      "name": "signup_role",
+      "type": "text",
+      "table": "profiles",
+      "schema": "public"
+    }
+  ],
+  "policyCount": 12,
+  "extraPublicRpc": {
+    "name": "append_my_vendor_products",
+    "arguments": "p_product_names text[]",
+    "security_definer": false,
+    "anon_execute": false,
+    "authenticated_execute": true,
+    "source_md5": "2a922a70d6a4a27c7ab06dc5e15d494c"
+  },
+  "drift": [
+    "Earlier manual contracts are present but not registered under local migration versions; do not reapply.",
+    "Onboarding registered as 20261111233854 and has an additional vendor enrollment guard compared with main's 20261111170000 source.",
+    "Migration 20261111234837 and append_my_vendor_products are present remotely but absent from audited main."
+  ]
+}
