@@ -16,14 +16,30 @@ class AccountProfileRepository(private val load: suspend () -> AccountProfile = 
     supabase.postgrest.rpc("get_my_account_profile").decodeAs<AccountProfile>()
 }) {
     suspend fun roleFor(userId: String): String {
-        val profile = load()
-        check(profile.userId == userId) { "O perfil recebido pertence a outra sessão." }
+        val profile = loadVerified(userId)
         return when (profile.role) {
             "vendor" -> { check(!profile.vendorId.isNullOrBlank()); "vendor" }
             "consumer" -> { check(profile.vendorId == null); "consumer" }
             "vendor_incomplete" -> throw ProfessionalProfileIncomplete()
             else -> error("Perfil indisponível.")
         }
+    }
+
+    /** The canonical server profile owns the vendor link; never infer it from a public view. */
+    suspend fun vendorIdFor(userId: String): String {
+        val profile = loadVerified(userId)
+        if (profile.role == "vendor_incomplete") throw ProfessionalProfileIncomplete()
+        check(profile.role == "vendor" && !profile.vendorId.isNullOrBlank()) {
+            "Entre com uma conta de vendedor para gerenciar seu catálogo."
+        }
+        return profile.vendorId
+    }
+
+    private suspend fun loadVerified(userId: String): AccountProfile {
+        require(userId.isNotBlank()) { "Entre na sua conta novamente." }
+        val profile = load()
+        check(profile.userId == userId) { "O perfil recebido pertence a outra sessão." }
+        return profile
     }
 }
 
