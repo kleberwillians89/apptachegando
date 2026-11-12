@@ -48,6 +48,14 @@ with tempfile.TemporaryDirectory(prefix='tch-sql-') as directory:
         profile_count = subprocess.check_output([str(x) for x in query_args] + ['-c', f"select count(*) from public.vendors where user_id='{profile_owner}'"]).decode().strip()
         assert profile_count == '1'
         print('WEB INTEGRATION PASS: two concurrent confirmed profile completions return one vendor ID and one row', flush=True)
+        onboarding_sql = f"begin;set local role authenticated;select set_config('request.jwt.claim.sub','{profile_owner}',true);select set_config('request.jwt.claims','{{\"session_id\":\"{profile_owner}\"}}',true);select public.complete_vendor_onboarding('Concurrent web','Concurrent bakery','Pães',array['Pão','Bolo'])->>'product_count';commit;"
+        def onboard_concurrently(_):
+            return subprocess.check_output([str(x) for x in query_args], input=onboarding_sql.encode()).decode().splitlines()[-1].strip()
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            counts = list(pool.map(onboard_concurrently, range(2)))
+        assert counts == ['2','2'], 'concurrent onboarding duplicated or lost products'
+        print('ONBOARDING INTEGRATION PASS: concurrent retries initialize exactly two products once', flush=True)
+
         # Two independent real PostgreSQL transactions contend for the same consumer.
         # The disposable cluster and synthetic seed IDs are mandatory; no remote arguments.
         concurrent_sql = """begin;
