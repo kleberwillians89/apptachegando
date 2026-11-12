@@ -18,9 +18,9 @@ import org.example.project.core.utils.UiState
 @Composable
 fun VendorProductsScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
-    var products by remember { mutableStateOf(emptyList<Product>()) }
+    var products by remember { mutableStateOf(emptyList<OwnCatalogProduct>()) }
     var name by remember { mutableStateOf("") }
-    var editing by remember { mutableStateOf<Product?>(null) }
+    var editing by remember { mutableStateOf<OwnCatalogProduct?>(null) }
     var removing by remember { mutableStateOf<Product?>(null) }
     var page by remember { mutableStateOf(0) }
     var refresh by remember { mutableStateOf(0) }
@@ -29,7 +29,7 @@ fun VendorProductsScreen(onBack: () -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(page, refresh) {
         busy = true; loaded = false; error = null
-        when (val result = backendResult("Não foi possível carregar o catálogo. Verifique a conexão e tente novamente.") { ProductRepository.listOwn(page) }) {
+        when (val result = backendResult("Não foi possível carregar o catálogo. Verifique a conexão e tente novamente.") { ProductRepository.listOwnEntries(page) }) {
             is UiState.Success -> { products = result.data; loaded = true }
             is UiState.Error -> error = result.message
             else -> Unit
@@ -53,7 +53,7 @@ fun VendorProductsScreen(onBack: () -> Unit) {
         IconButton(onClick = onBack, enabled = !busy) { Icon(ArrowBackIcon, "Voltar") }
     }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Tipos de produtos prontos que costuma oferecer. O catálogo não promete estoque e não realiza compras.")
+            Text("Gerencie os produtos que você cadastrou no site ou no aplicativo. Você pode ocultá-los sem excluir. O catálogo não garante estoque e não realiza compras.")
             Text("Imagens ilustrativas por categoria. Envio de fotos próprias ainda indisponível.", style = MaterialTheme.typography.bodySmall)
             if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
             error?.let {
@@ -68,10 +68,22 @@ fun VendorProductsScreen(onBack: () -> Unit) {
             LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (loaded && products.isEmpty()) item { Text("Nenhum item nesta página. Adicione uma categoria ou volte à página anterior.") }
                 items(products, key = { it.id }) { product ->
-                    Row(Modifier.fillMaxWidth()) {
-                        Text(product.name, Modifier.weight(1f))
-                        TextButton(enabled = loaded && !busy, onClick = { editing = product; name = product.name }) { Text("Editar") }
-                        TextButton(enabled = loaded && !busy, onClick = { removing = product }) { Text("Remover") }
+                    Column(Modifier.fillMaxWidth()) {
+                        Row(Modifier.fillMaxWidth()) {
+                            Text(product.name, Modifier.weight(1f))
+                            Text(if (product.isActive) "Visível" else "Oculto",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                            TextButton(enabled = loaded && !busy, onClick = {
+                                persist { ProductRepository.setActive(product.id, !product.isActive) }
+                            }) { Text(if (product.isActive) "Ocultar" else "Mostrar") }
+                            TextButton(enabled = loaded && !busy, onClick = {
+                                editing = product; name = product.name
+                            }) { Text("Editar") }
+                            TextButton(enabled = loaded && !busy, onClick = { removing = product }) { Text("Remover") }
+                        }
                     }
                 }
             }
