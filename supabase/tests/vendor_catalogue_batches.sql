@@ -10,6 +10,8 @@ create function pg_temp.tc_denied(p_stmt text) returns boolean language plpgsql 
 begin execute p_stmt; return false;
 exception when insufficient_privilege then return true; end $$;
 
+grant execute on function pg_temp.tc_assert(boolean,text), pg_temp.tc_denied(text) to authenticated,anon;
+
 select pg_temp.tc_assert(
   not has_function_privilege('anon','public.append_my_vendor_products(text[])','execute'),
   'anonymous must not append products'
