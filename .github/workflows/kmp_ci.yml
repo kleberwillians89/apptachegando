@@ -17,9 +17,16 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: android-actions/setup-android@v3
+      # GitHub-hosted Ubuntu already supplies the Android SDK and current cmdline-tools.
+      # setup-android@v3 tries to install the removed `tools` package and fails before Gradle.
       - uses: gradle/actions/setup-gradle@v4
-      - run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+      - name: Prepare Android SDK 36
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="$(command -v sdkmanager)"; fi
+          "$SDKMANAGER" --install 'platforms;android-36' 'build-tools;36.0.0'
       - run: ./gradlew :composeApp:compileDebugKotlinAndroid :composeApp:testDebugUnitTest :composeApp:lintDebug --no-daemon
   ios:
     runs-on: macos-latest
@@ -47,10 +54,21 @@ jobs:
         env:
           TCH_CONTAINER: ${{ job.services.postgis.id }}
         run: |
-          for attempt in {1..30}; do
-            if docker exec "$TCH_CONTAINER" pg_isready -U postgres; then break; fi
+          # pg_isready can succeed before docker-entrypoint finishes PostGIS initialization.
+          # Wait for its init scripts, or DROP/CREATE EXTENSION races with 10_postgis.sh.
+          initialized=false
+          for attempt in {1..60}; do
+            if docker logs "$TCH_CONTAINER" 2>&1 | grep -q 'PostgreSQL init process complete; ready for start up'; then
+              initialized=true
+              break
+            fi
             sleep 1
           done
+          if [ "$initialized" != true ]; then
+            docker logs "$TCH_CONTAINER" >&2
+            exit 1
+          fi
+          docker exec "$TCH_CONTAINER" pg_isready -U postgres
           # The image preinstalls PostGIS in public; this scratch fixture starts clean.
           docker exec "$TCH_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 -c 'DROP EXTENSION IF EXISTS postgis_topology CASCADE; DROP EXTENSION IF EXISTS postgis CASCADE;'
           for sql in scripts/sql/bootstrap-postgres.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/*.sql; do
